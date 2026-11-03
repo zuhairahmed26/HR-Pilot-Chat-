@@ -21,8 +21,8 @@ export const getTickets=(token:string)=>request<HRRecord[]>('/api/hr/chat/ticket
 export const editSession=(token:string,id:string,payload:{chat_title?:string;pinned?:boolean})=>request<Session>(`/api/hr/chat/${encodeURIComponent(id)}`,token,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
 export const deleteSession=(token:string,id:string)=>request<{deleted:string}>(`/api/hr/chat/${encodeURIComponent(id)}`,token,{method:'DELETE'})
 
-export async function sendChat(args:{token:string;sessionId:string|null;query:string;attachment?:File;signal:AbortSignal;onChunk:(fragment:string)=>void;onDone:(sessionId:string,sources:Citation[])=>void;onStatus?:(status:string)=>void}){
- const form=new FormData();form.set('user_query',args.query);form.set('chat_history','[]');form.set('stream_events','true');if(args.sessionId)form.set('session_id',args.sessionId);if(args.attachment)form.set('attachment',args.attachment)
+export async function sendChat(args:{token:string;sessionId:string|null;query:string;attachment?:File;provider?:'cohere'|'groq';signal:AbortSignal;onChunk:(fragment:string)=>void;onDone:(sessionId:string,sources:Citation[])=>void;onStatus?:(status:string)=>void}){
+ const form=new FormData();form.set('user_query',args.query);form.set('chat_history','[]');form.set('stream_events','true');form.set('provider',args.provider||'cohere');if(args.sessionId)form.set('session_id',args.sessionId);if(args.attachment)form.set('attachment',args.attachment)
  const r=await fetch(`${BASE}/api/hr/chat/get_response`,{method:'POST',headers:{Authorization:`Bearer ${args.token}`},body:form,signal:args.signal})
  if(!r.ok)throw new ApiError(await parseError(r),r.status)
  if(!r.body)throw new Error('The server did not return a stream.')

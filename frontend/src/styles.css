@@ -3,20 +3,184 @@
 /* OPD claims — responsive healthcare reimbursement workspace */
 .opd-page{background:#f8f9fd;flex:1;overflow-y:auto;padding:40px clamp(19px,4vw,62px) 64px;color:#26334b}.opd-heading{max-width:1300px;margin:0 auto 26px;display:flex;justify-content:space-between;align-items:center;gap:20px}.opd-heading h1{font-family:Manrope,sans-serif;font-size:32px;letter-spacing:-1.2px;margin:10px 0 7px}.opd-heading p{font-size:13px;color:#8792a5;line-height:1.7;margin:0}.opd-secure{border:1px solid #dde9e7;color:#50867a;background:#f1faf7;padding:9px 12px;border-radius:30px;font-size:11px;font-weight:750;display:flex;align-items:center;gap:7px;white-space:nowrap}.opd-overview{max-width:1300px;margin:0 auto 25px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.opd-stat{background:white;border:1px solid #e9ecf5;border-radius:15px;padding:20px;display:flex;gap:16px;align-items:center;box-shadow:0 4px 19px #22345b05}.opd-stat-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;flex:none}.opd-stat-icon.violet{background:#eeedff;color:#6963db}.opd-stat-icon.amber{background:#fff3e6;color:#d79a50}.opd-stat-icon.mint{background:#e9f8f2;color:#3ea480}.opd-stat>div:last-child{min-width:0}.opd-stat span,.opd-stat small{display:block;font-size:11px;color:#93a0b2}.opd-stat strong{display:block;font-family:Manrope,sans-serif;font-size:20px;margin:5px 0;color:#293651;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.opd-layout{max-width:1300px;margin:0 auto;display:grid;grid-template-columns:minmax(340px,1.1fr) minmax(320px,.9fr);gap:22px;align-items:start}.opd-panel{background:#fff;border:1px solid #e8ebf4;border-radius:16px;box-shadow:0 8px 30px #35456509;overflow:hidden}.opd-submit-panel{padding:28px}.opd-section-title{display:flex;gap:13px;align-items:center;padding-bottom:23px;border-bottom:1px solid #edf0f5;margin-bottom:24px}.opd-section-symbol{width:44px;height:44px;border-radius:13px;background:#eeeefe;color:#615bd1;display:grid;place-items:center}.opd-section-title h2,.opd-history-head h2{margin:0 0 6px;font-size:16px;font-weight:800;color:#2a3750}.opd-section-title p,.opd-history-head p{margin:0;font-size:11px;color:#99a3b2;line-height:1.6}.opd-form{display:flex;flex-direction:column;gap:21px}.opd-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.opd-form label{display:flex;flex-direction:column;gap:9px;font-size:12px;font-weight:750;color:#43516a}.opd-form input:not([type=file]),.opd-form textarea{width:100%;border:1px solid #dee4ee;border-radius:9px;padding:13px 14px;font:inherit;font-size:13px;font-weight:450;outline:0;background:#fff;color:#2e3d55}.opd-form textarea{resize:vertical;min-height:92px}.opd-form input:focus,.opd-form textarea:focus{border-color:#827ee3;box-shadow:0 0 0 3px #625dde17}.opd-form label small{color:#a3adba;font-size:10px;font-weight:500;align-self:flex-end}.opd-field-label{font-size:12px;font-weight:750;color:#43516a}.opd-field-label span{font-size:10px;font-weight:650;color:#969ab9;margin-left:6px}.opd-hidden-file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.opd-dropzone{border:1.5px dashed #bfc4ee;border-radius:13px;background:#fafaff;min-height:195px;display:flex;flex-direction:column;gap:7px;justify-content:center;align-items:center;text-align:center;cursor:pointer;color:#6670a9;transition:.15s}.opd-dropzone:hover,.opd-dropzone.dragging{border-color:#7369db;background:#f0efff}.opd-upload-icon{height:47px;width:47px;display:grid;place-items:center;border-radius:13px;background:#ecebff;color:#6b63d9;margin-bottom:5px}.opd-dropzone strong{font-size:12px;color:#3e4c65}.opd-dropzone span{font-size:11px;color:#929bb0}.opd-dropzone u{color:#6057d3;font-weight:800}.opd-dropzone small{font-size:10px;color:#a8afbe;margin-top:7px}.opd-selected-file{border:1px solid #d8ddf4;border-radius:12px;background:#f8f8ff;padding:14px;display:flex;align-items:center;gap:12px;min-width:0}.opd-file-icon{width:42px;height:42px;background:#ededff;color:#6b62da;border-radius:10px;display:grid;place-items:center;flex:none}.opd-file-details{min-width:0;flex:1}.opd-file-details strong,.opd-file-details span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.opd-file-details strong{font-size:12px;color:#3b4863}.opd-file-details span{margin-top:5px;font-size:10px;color:#98a2b4}.opd-selected-file button{border:none;background:transparent;color:#8892a6;cursor:pointer}.opd-privacy-note{display:flex;gap:9px;align-items:flex-start;background:#f4f7fa;color:#7b8a9b;border-radius:9px;padding:13px;font-size:11px;line-height:1.7}.opd-privacy-note svg{flex:none;color:#6c9a89}.opd-submit-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:10px;background:#5d57d2;color:white;font-size:12px;font-weight:800;padding:15px;cursor:pointer}.opd-submit-btn:hover:not(:disabled){background:#4d46c1}.opd-submit-btn:disabled{opacity:.65;cursor:wait}.opd-submit-btn svg:last-child{margin-left:auto}.opd-history-head{padding:26px 23px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #eff1f6}.opd-history-empty{min-height:310px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:24px;color:#929cb0}.opd-history-empty h3{margin:12px 0 6px;color:#49566b;font-size:14px}.opd-history-empty p{font-size:12px;line-height:1.7;max-width:240px}.opd-empty-icon{width:62px;height:62px;border-radius:17px;background:#f0effe;color:#746adb;display:grid;place-items:center}.opd-claim-list{padding:10px 18px}.opd-claim{padding:19px 6px;border-bottom:1px solid #edf0f5}.opd-claim:last-child{border-bottom:0}.opd-claim-top{display:flex;align-items:center;gap:11px}.opd-claim-icon{flex:none;height:40px;width:40px;border-radius:11px;display:grid;place-items:center;background:#f1efff;color:#766be0}.opd-claim-title{flex:1;min-width:0}.opd-claim-title strong,.opd-claim-title span{display:block}.opd-claim-title strong{font-size:12px;color:#303f56}.opd-claim-title span{font-size:10px;color:#9ba6b5;margin-top:4px}.opd-claim-desc{font-size:11px;color:#77859a;line-height:1.7;margin:14px 0;overflow-wrap:anywhere}.opd-claim-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px}.opd-claim-bottom strong{font-size:13px;color:#374360}.opd-claim-bottom button{border:0;background:#f1f0ff;color:#5f57c5;border-radius:7px;display:flex;align-items:center;gap:5px;padding:9px 10px;cursor:pointer;font-size:10px;font-weight:800;max-width:62%}.opd-download-filename{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:105px}.opd-alert{max-width:1300px;margin:0 auto 16px;display:flex;align-items:center;gap:10px;padding:14px;border-radius:11px;font-size:12px;line-height:1.6}.opd-alert span{flex:1}.opd-alert button{border:0;background:transparent;color:inherit;cursor:pointer}.opd-error{background:#fff0f2;color:#ae455a;border:1px solid #f5dade}.opd-success{background:#ebf8f1;color:#318c69;border:1px solid #d5eddd}@media(max-width:1150px){.opd-layout{grid-template-columns:1fr}.opd-history-panel{min-height:280px}}@media(max-width:760px){.opd-page{padding:28px 15px 45px}.opd-heading{align-items:flex-start}.opd-heading h1{font-size:27px}.opd-secure{display:none}.opd-overview{gap:9px}.opd-stat{padding:12px;gap:9px;align-items:flex-start}.opd-stat-icon{width:35px;height:35px;border-radius:9px}.opd-stat-icon svg{width:17px}.opd-stat span,.opd-stat small{font-size:9px}.opd-stat strong{font-size:15px}.opd-submit-panel{padding:18px}.opd-form-grid{grid-template-columns:1fr}.opd-history-head{padding:19px 14px}.opd-claim-list{padding:8px 13px}}
 
-/* OPD upload in AI Assistant's chat composer; claims page is read-only history */
-.chat-opd-hidden{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.chat-opd-attach button{border:0;background:#f1f0fe;color:#5955bf;display:inline-flex;align-items:center;gap:7px;padding:8px 11px;border-radius:8px;font-size:11px;font-weight:750;white-space:nowrap}
-.chat-opd-attach button:hover:not(:disabled){background:#e7e4ff}
-.chat-opd-attach button:disabled{opacity:.5}
-.chat-opd-card{margin:0 auto 13px;max-width:850px;background:#fff;border:1px solid #dedff5;box-shadow:0 8px 24px #39417813;border-radius:15px;padding:16px 18px;color:#293653}
-.chat-opd-header,.chat-opd-header-left,.chat-opd-file,.chat-opd-footer{display:flex;align-items:center;gap:11px}.chat-opd-header{justify-content:space-between}.chat-opd-header-left{min-width:0}.chat-opd-header-left strong,.chat-opd-header-left small{display:block}.chat-opd-header-left strong{font-size:13px}.chat-opd-header-left small{font-size:11px;color:#8693a5;margin-top:3px}.chat-opd-icon{background:#eeedff;color:#6c64d7;border-radius:9px;display:grid;place-items:center;height:36px;width:36px;flex:none}.chat-opd-close{background:transparent;border:0;color:#909aac;padding:7px;border-radius:7px}.chat-opd-file{min-width:0;padding:10px;margin:13px 0;border:1px solid #e4e6f6;background:#f8f8fe;border-radius:9px;color:#615acc}.chat-opd-file span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:12px;font-weight:750}.chat-opd-file small{font-size:10px;color:#949caf;flex:none}
-.chat-opd-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.chat-opd-fields label,.chat-opd-description{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:750;color:#526077}.chat-opd-fields input,.chat-opd-description input{width:100%;border:1px solid #dee3ed;border-radius:8px;padding:10px 11px;font-size:12px;color:#2c3d55;background:white;outline:0}.chat-opd-fields input:focus,.chat-opd-description input:focus{border-color:#8078e7;box-shadow:0 0 0 3px #746ceb18}.chat-opd-description{margin-top:10px}.chat-opd-footer{justify-content:space-between;margin-top:13px;gap:12px}.chat-opd-footer span{display:flex;align-items:center;gap:5px;font-size:10px;color:#8392a2}.chat-opd-footer button,.opd-history-banner button,.opd-history-start{border:0;border-radius:9px;background:#5d57d2;color:#fff;font-size:11px;font-weight:800;padding:11px 14px;display:flex;gap:7px;align-items:center;justify-content:center;white-space:nowrap}.chat-opd-footer button:disabled{opacity:.6}
-.opd-history-banner{display:flex;align-items:center;gap:17px;background:#fff;border:1px solid #e6e9f4;border-radius:14px;max-width:1300px;margin:0 auto 23px;padding:21px 23px;box-shadow:0 6px 24px #33425b08}.opd-history-banner-icon{height:50px;width:50px;border-radius:13px;background:#eeeeff;color:#665ed5;display:grid;place-items:center;flex:none}.opd-history-banner>div:nth-child(2){flex:1;min-width:0}.opd-history-banner strong{display:block;font-size:14px;color:#34415b}.opd-history-banner p{color:#8a97a9;font-size:12px;line-height:1.6;margin:5px 0 0}.opd-history-only{max-width:1300px;margin:0 auto}.opd-history-only .opd-claim-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 36px;padding:14px 26px}.opd-history-only .opd-history-empty{min-height:260px}.opd-history-start{margin-top:12px}
-@media(max-width:850px){.opd-history-only .opd-claim-list{grid-template-columns:1fr}.opd-history-banner{flex-wrap:wrap}.opd-history-banner button{margin-left:66px}}@media(max-width:560px){.chat-opd-fields{grid-template-columns:1fr}.chat-opd-card{padding:13px}.chat-opd-footer{align-items:stretch;flex-direction:column}.chat-opd-footer button{width:100%}.chat-opd-attach button span{display:none}.opd-history-banner button{margin-left:0;width:100%}.opd-history-banner-icon{height:40px;width:40px}.opd-history-banner>div:nth-child(2){flex-basis:calc(100% - 60px)}}
 
-/* Conversational OPD: only a discreet attachment chip in the chat composer. */
-.opd-chat-attachment{display:flex;align-items:center;gap:12px;margin:0 auto 10px;padding:11px 14px;max-width:860px;border:1px solid #dce2f3;border-radius:14px;background:#f5f7ff;color:#374375}
-.opd-chat-attachment>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.opd-chat-attachment strong{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13px}
-.opd-chat-attachment small{font-size:11px;color:#68718c}
-.opd-chat-attachment button{border:0;background:transparent;color:#68718c;cursor:pointer;padding:6px}
+
+/* Provider comparison toggle */
+.provider-switch{display:inline-flex;align-items:center;gap:3px;padding:4px;border:1px solid var(--border,#dce3eb);border-radius:999px;background:var(--surface,#f5f7fa);flex-shrink:0}
+.provider-choice{border:0;background:transparent;border-radius:999px;padding:8px 12px;color:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.provider-choice.selected{background:#22364b;color:white;box-shadow:0 1px 4px rgba(0,0,0,.14)}
+.provider-choice:disabled:not(.selected){opacity:.55;cursor:not-allowed}
+.provider-choice:disabled.selected{cursor:default}
+.provider-hint{font-size:12px;opacity:.7;margin:6px 20px}
+@media(max-width:550px){.provider-choice{padding:6px 8px;font-size:11px}.chat-titlebar{gap:8px;flex-wrap:wrap}}
+
+/* OPD attachment controls */
+
+.chat-attachment-input,
+input[type="file"].chat-attachment-input {
+  display: none !important;
+}
+
+.chat-attach-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid #dce3ee;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.chat-attach-button:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.chat-attach-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* HR Pilot conversational OPD attachment controls — actual App.tsx class names */
+.chat-opd-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.chat-opd-attach { display: flex; align-items: center; }
+.chat-opd-attach button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #e1e5ef;
+  border-radius: 9px;
+  padding: 8px 11px;
+  background: #f8f9ff;
+  color: #6261b9;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  transition: background .15s ease, border-color .15s ease;
+}
+.chat-opd-attach button:hover:not(:disabled) { background: #eeeffe; border-color: #c8c9f0; }
+.chat-opd-attach button:disabled { opacity: .55; cursor: not-allowed; }
+.opd-chat-attachment {
+  max-width: 870px;
+  margin: 0 auto 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #dfe2f4;
+  border-radius: 11px;
+  background: #f7f7ff;
+  color: #625dc8;
+}
+.opd-chat-attachment > div { flex: 1; min-width: 0; }
+.opd-chat-attachment strong,
+.opd-chat-attachment small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opd-chat-attachment strong { font-size: 12px; color: #36425d; }
+.opd-chat-attachment small { margin-top: 3px; font-size: 10px; color: #9099ad; }
+.opd-chat-attachment button {
+  border: 0;
+  background: transparent;
+  color: #8490a7;
+  padding: 6px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+}
+.opd-chat-attachment button:hover:not(:disabled) { background: #e9eafd; color: #5556ad; }
+/* Keep attachment and send controls comfortably spaced in composer. */
+.composer-actions { gap: 10px; }
+.composer-hint { margin-right: auto; }
+
+/* OPD history-only view: match the current OPDClaimsPage component */
+.opd-history-banner {
+  max-width: 1300px;
+  margin: 0 auto 22px;
+  padding: 20px 23px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #dfe3f8;
+  border-radius: 15px;
+  background: #f1f2ff;
+  color: #39436b;
+}
+.opd-history-banner-icon {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: #e3e5ff;
+  color: #615bd1;
+}
+.opd-history-banner > div:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.opd-history-banner strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: #3c426e;
+}
+.opd-history-banner p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #7d83a6;
+}
+.opd-history-banner > button,
+.opd-history-start {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #d5d6fa;
+  border-radius: 9px;
+  background: #fff;
+  color: #5553b8;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+  transition: background .15s ease, border-color .15s ease;
+}
+.opd-history-banner > button:hover,
+.opd-history-start:hover {
+  background: #e9eafd;
+  border-color: #bcbef1;
+}
+.opd-history-only {
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+}
+.opd-history-start { margin-top: 9px; }
+@media (max-width: 760px) {
+  .opd-history-banner {
+    padding: 17px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .opd-history-banner > div:nth-child(2) { flex-basis: calc(100% - 64px); }
+  .opd-history-banner > button { margin-left: 0; width: 100%; }
+}
