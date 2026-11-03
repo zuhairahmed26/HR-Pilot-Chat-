@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import uuid
 from datetime import datetime, timezone
 from typing import Annotated
@@ -13,7 +14,7 @@ from src.database.models import HRChatHistory
 from src.hr_management_agent.auth.authenticate import get_current_employee
 from src.hr_management_agent.chat.redis_client import get_session,set_session,delete_session
 from src.hr_management_agent.policy_vector_store.utils import search_policy
-from src.core.cohere_client import complete, stream_complete
+from src.core.llm_router import complete, stream_complete
 from src.hr_management_agent.chat.intent_classifier import classify_intent
 from src.hr_management_agent.leave.service import (has_active_draft, process_leave_message, list_leave_requests)
 from src.hr_management_agent.tickets.service import (has_active_ticket_draft, process_ticket_message, list_tickets)
@@ -60,7 +61,7 @@ def response_for(query:str,history:list[dict],user:dict, intent: str | None = No
     if intent == 'conversation_history':
         if not history:
             return 'There are no previous messages in this conversation yet.', []
-        return complete(CONVERSATION_SYSTEM, query, history), []
+        return complete(CONVERSATION_SYSTEM, query, history, provider="cohere"), []
     refs=search_policy(query)
     if not refs:
         return ('I cannot verify that from an HR policy yet. Ask an administrator to upload policy PDFs before asking policy questions.'),[]
@@ -68,7 +69,7 @@ def response_for(query:str,history:list[dict],user:dict, intent: str | None = No
     system=('You are the HR Pilot policy assistant. Answer ONLY from the provided policy excerpts. '
             'If evidence does not establish the answer, explicitly say so. Cite filename and page in the answer. '
             'Do not claim an HR action was submitted or an employee balance exists unless supplied.')
-    answer=complete(system, f'POLICY EXCERPTS:\n{context}\n\nQUESTION: {query}',history)
+    answer=complete(system, f'POLICY EXCERPTS:\n{context}\n\nQUESTION: {query}',history,provider='cohere')
     return answer,refs
 
 def public_policy_sources(refs: list[dict], max_sources: int = 5) -> list[dict]:
@@ -95,10 +96,56 @@ def public_policy_sources(refs: list[dict], max_sources: int = 5) -> list[dict]:
             break
     return result
 
-def generate_title(query: str) -> str:
-    return (query.strip().replace('\n',' ')[:50] or 'New Chat')
+def fallback_chat_title(query: str, intent: str) -> str:
+    """Produce a useful topic label even when the Cohere API is unavailable."""
+    known = {
+        'opd_claim_request': 'OPD Reimbursement Claim',
+        'leave_apply': 'Leave Application',
+        'leave_balance_inquiry': 'Leave Balance Inquiry',
+        'ticket_creation': 'IT Support Request' if re.search(r'\b(laptop|computer|wifi|internet|screen|printer)\b', query, re.I) else 'Support Ticket',
+        'ticket_status_update': 'Support Ticket Status',
+        'conversation_history': 'Conversation History',
+        'document_request': 'HR Document Request',
+        'retrieve_salary_slip': 'Salary Slip Request',
+        'greeting': 'HR Assistant Chat',
+    }
+    if intent in known:
+        return known[intent]
+    normalized = re.sub(r'\s+', ' ', query).strip()
+    normalized = re.sub(
+        r'^(?:please\s+)?(?:can you|could you|would you|i want to|i would like to|tell me about|'
+        r'explain|what is|what are|how do i|how can i|give me|show me)\s+', '', normalized, flags=re.I
+    )
+    normalized = re.sub(r'[^\w\s&/-]', '', normalized).strip()
+    words = normalized.split()[:6]
+    if not words:
+        return 'New Chat'
+    return ' '.join(words).title()[:60].strip()
 
-def stream_and_save(session_id: str, query: str, employee_id: int, user: dict, result: dict, staged_attachment: dict | None = None):
+
+def generate_title(query: str, answer: str, intent: str, provider: str = "cohere") -> str:
+    """Generate a brief topic title from the first exchange; never block chat on title errors."""
+    fallback = fallback_chat_title(query, intent)
+    if intent == 'greeting':
+        return fallback
+    try:
+        generated = complete(
+            'You create concise, useful HR assistant conversation titles. '
+            'Output ONLY the title, 3 to 6 words, no quotes, punctuation at the end, '
+            'markdown, or preamble. Describe the topic or employee task, not the wording '
+            'of the question. Never include personal names, health details, or amounts.',
+            f'Employee message: {query[:500]}\nAssistant reply: {answer[:400]}',
+            provider=provider,
+            max_completion_tokens=60,
+        )
+        title = re.sub(r'\s+', ' ', generated).strip(' \"\'`#*.-:')
+        if title and len(title.split()) <= 8 and len(title) <= 70:
+            return title
+    except Exception as exc:
+        log.warning('Title generation unavailable; using fallback (%s)', type(exc).__name__)
+    return fallback
+
+def stream_and_save(session_id: str, query: str, employee_id: int, user: dict, result: dict, staged_attachment: dict | None = None, provider: str = "cohere"):
     """Yield real text fragments, then persist complete history after successful generation.
 
     The caller emits the done event only after this function returns successfully.
@@ -116,10 +163,10 @@ def stream_and_save(session_id: str, query: str, employee_id: int, user: dict, r
     elif has_active_ticket_draft(session_id, employee_id):
         intent = 'ticket_creation'
     else:
-        intent = classify_intent(query, history)
+        intent = classify_intent(query, history, provider=provider)
     refs = []
     if intent == 'opd_claim_request':
-        fragments = iter([process_opd_message(session_id, employee_id, query, staged_attachment)])
+        fragments = iter([process_opd_message(session_id, employee_id, query, staged_attachment, provider=provider)])
     elif intent == 'leave_apply':
         fragments = iter([process_leave_message(session_id, employee_id, query, history)])
     elif intent == 'ticket_creation':
@@ -131,7 +178,7 @@ def stream_and_save(session_id: str, query: str, employee_id: int, user: dict, r
         # For conversation questions use the authenticated session history.
         # Do not search Qdrant: policy excerpts cannot reveal prior user messages.
         if history:
-            fragments = stream_complete(CONVERSATION_SYSTEM, query, history)
+            fragments = stream_complete(CONVERSATION_SYSTEM, query, history, provider=provider)
         else:
             fragments = iter(['There are no previous messages in this conversation yet.'])
     elif intent == 'hr_policy_qa':
@@ -148,7 +195,7 @@ def stream_and_save(session_id: str, query: str, employee_id: int, user: dict, r
                 'Do not claim an HR action was submitted or an employee balance exists unless supplied.'
             )
             prompt = f'POLICY EXCERPTS:\n{context}\n\nQUESTION: {query}'
-            fragments = stream_complete(system, prompt, history)
+            fragments = stream_complete(system, prompt, history, provider=provider)
         else:
             fragments = iter([
                 'I cannot verify that from an HR policy yet. '
@@ -178,7 +225,7 @@ def stream_and_save(session_id: str, query: str, employee_id: int, user: dict, r
         if row is None:
             row = HRChatHistory(
                 session_id=session_id, employee_id=employee_id,
-                chat_title=generate_title(query), chat_data=history
+                chat_title=generate_title(query, answer, intent, provider=provider), chat_data=history
             )
             db.add(row)
         else:
@@ -193,8 +240,12 @@ def stream_and_save(session_id: str, query: str, employee_id: int, user: dict, r
 @router.post('/get_response')
 async def get_response(user_query: Annotated[str,Form()], session_id: Annotated[str|None,Form()]=None,
     chat_history: Annotated[str,Form()]='[]',stream_events: Annotated[bool,Form()]=False,
+    provider: Annotated[str,Form()]='cohere',
     attachment: UploadFile | None = File(default=None),
     current_user:dict=Depends(get_current_employee)):
+    provider = provider.strip().lower()
+    if provider not in ('cohere', 'groq'):
+        raise HTTPException(422, "Provider must be 'cohere' or 'groq'")
     if not user_query.strip() and attachment is None: raise HTTPException(422,'user_query cannot be empty')
     if len(user_query)>20000: raise HTTPException(413,'Message too long')
     session_id=session_id or str(uuid.uuid4())
@@ -210,7 +261,7 @@ async def get_response(user_query: Annotated[str,Form()], session_id: Annotated[
             if stream_events: yield 'event: status\ndata: '+json.dumps({'loading':'Generating response'})+'\n\n'
             else: yield json.dumps({'loading':'Generating response'})+'\n'
             result = {}
-            for fragment in stream_and_save(session_id, message, user_id, current_user, result, staged):
+            for fragment in stream_and_save(session_id, message, user_id, current_user, result, staged, provider=provider):
                 if stream_events:
                     yield 'event: chunk\ndata: '+json.dumps({'text': fragment})+'\n\n'
                 else:

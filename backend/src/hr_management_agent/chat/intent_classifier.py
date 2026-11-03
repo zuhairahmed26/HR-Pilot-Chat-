@@ -1,4 +1,4 @@
-"""Cohere-powered intent routing, independent of action execution.
+"""Provider-aware intent routing, independent of action execution.
 
 An intent is NOT permission to perform an HR action. Handlers must enforce
 employee authorization and actually commit transactions before reporting success.
@@ -9,7 +9,8 @@ import re
 from typing import Literal
 
 from pydantic import BaseModel
-from src.core.cohere_client import client, extract_text
+from src.core.llm_router import complete, normalize_provider
+from src.core.cohere_client import client as cohere_client, extract_text
 from src.core.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -120,8 +121,9 @@ def fallback_classify(query: str) -> str:
     return 'hr_policy_qa'
 
 
-def classify_intent(query: str, history: list[dict] | None = None) -> str:
+def classify_intent(query: str, history: list[dict] | None = None, provider: str = "cohere") -> str:
     """Return a validated intent. Never trust an unvalidated model label."""
+    selected = normalize_provider(provider)
     if _history_question(query):
         return 'conversation_history'  # guaranteed precision for history requests
     if _explicit_leave_application(query):
@@ -134,16 +136,28 @@ def classify_intent(query: str, history: list[dict] | None = None) -> str:
             snippets.append({'role': msg['role'], 'content': msg['content'][:600]})
     prompt = json.dumps({'history': snippets, 'latest_user_message': query}, ensure_ascii=False)
     try:
-        response = client().chat(
-            model=get_settings().COHERE_CHAT_MODEL,
-            messages=[
-                {'role': 'system', 'content': CLASSIFIER_SYSTEM},
-                {'role': 'user', 'content': 'Classify this HR request. Output a JSON object: ' + prompt},
-            ],
-            response_format={'type': 'json_object'},
-            temperature=0,
-        )
-        return IntentResult.model_validate(json.loads(extract_text(response))).intent
+        if selected == 'cohere':
+            response = cohere_client().chat(
+                model=get_settings().COHERE_CHAT_MODEL,
+                messages=[
+                    {'role': 'system', 'content': CLASSIFIER_SYSTEM},
+                    {'role': 'user', 'content': 'Classify this HR request. Output a JSON object: ' + prompt},
+                ],
+                response_format={'type': 'json_object'},
+                temperature=0,
+            )
+            raw = extract_text(response)
+        else:
+            raw = complete(
+                CLASSIFIER_SYSTEM,
+                'Classify this HR request. Output a JSON object: ' + prompt,
+                provider=selected,
+                max_completion_tokens=120,
+            )
+        clean = raw.strip()
+        if clean.startswith('```'):
+            clean = re.sub(r'^```(?:json)?\s*|\s*```$', '', clean, flags=re.I).strip()
+        return IntentResult.model_validate(json.loads(clean)).intent
     except Exception:
-        logger.warning('Cohere intent classification failed; using safe fallback', exc_info=True)
+        logger.warning('%s intent classification failed; using safe fallback', selected, exc_info=True)
         return fallback_classify(query)
