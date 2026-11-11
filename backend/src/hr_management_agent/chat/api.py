@@ -15,11 +15,11 @@ from src.hr_management_agent.auth.authenticate import get_current_employee
 from src.hr_management_agent.chat.redis_client import get_session,set_session,delete_session
 from src.hr_management_agent.policy_vector_store.utils import search_policy
 from src.core.llm_router import complete, stream_complete
-from src.hr_management_agent.chat.intent_classifier import classify_intent
+from src.hr_management_agent.chat.intent_classifier import classify_intent, IntentClassificationError
 from src.hr_management_agent.leave.service import (has_active_draft, process_leave_message, list_leave_requests)
 from src.hr_management_agent.tickets.service import (has_active_ticket_draft, process_ticket_message, list_tickets)
 from src.hr_management_agent.opd.service import (create_claim, list_claims, get_claim, STORAGE_DIR)
-from src.hr_management_agent.opd.conversation import (has_active_opd_draft, is_opd_request, stage_attachment, process_opd_message)
+from src.hr_management_agent.opd.conversation import (has_active_opd_draft, stage_attachment, process_opd_message)
 
 log=logging.getLogger(__name__)
 router=APIRouter(prefix='/api/hr/chat',tags=['Chat'])
@@ -156,14 +156,27 @@ def stream_and_save(session_id: str, query: str, employee_id: int, user: dict, r
         ).first()
         history = list(row.chat_data or []) if row else []
 
-    if staged_attachment or has_active_opd_draft(session_id, employee_id) or is_opd_request(query):
-        intent = 'opd_claim_request'
-    elif has_active_draft(session_id, employee_id):
-        intent = 'leave_apply'
-    elif has_active_ticket_draft(session_id, employee_id):
-        intent = 'ticket_creation'
-    else:
-        intent = classify_intent(query, history, provider=provider)
+    active_workflows = [intent for intent, check in (
+        ('opd_claim_request', has_active_opd_draft),
+        ('leave_apply', has_active_draft),
+        ('ticket_creation', has_active_ticket_draft),
+    ) if check(session_id, employee_id)]
+    try:
+        intent = classify_intent(query, history, provider=provider,
+                                 active_workflows=active_workflows,
+                                 has_attachment=staged_attachment is not None)
+    except IntentClassificationError:
+        if staged_attachment:
+            (STORAGE_DIR / staged_attachment['stored_filename']).unlink(missing_ok=True)
+        raise
+    # Only the OPD handler can consume a staged receipt. Do not silently discard
+    # an upload or execute another action when its classified route cannot use it.
+    if staged_attachment and intent != 'opd_claim_request':
+        (STORAGE_DIR / staged_attachment['stored_filename']).unlink(missing_ok=True)
+        raise IntentClassificationError(
+            'Attachments are supported for OPD claims only. Please clarify the claim '
+            'and reattach the receipt, or resend your message without the attachment.'
+        )
     refs = []
     if intent == 'opd_claim_request':
         fragments = iter([process_opd_message(session_id, employee_id, query, staged_attachment, provider=provider)])
@@ -270,6 +283,11 @@ async def get_response(user_query: Annotated[str,Form()], session_id: Annotated[
                 yield 'event: done\ndata: '+json.dumps({
                     'session_id': session_id, 'sources': result['sources']
                 })+'\n\n' 
+        except IntentClassificationError as exc:
+            if stream_events:
+                yield 'event: error\ndata: '+json.dumps({'error': str(exc), 'code': 'INTENT_CLASSIFICATION_FAILED'})+'\n\n'
+            else:
+                yield '\n'+str(exc)
         except (httpx.ConnectError, httpx.ConnectTimeout, httpx.ReadTimeout):
             log.warning('Cohere connection failed during chat processing')
             error_message = 'AI provider temporarily unavailable. Check your saved requests before retrying an action.'

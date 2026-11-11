@@ -56,11 +56,6 @@ def has_active_opd_draft(sid: str, uid: int) -> bool:
         return active_draft(db, sid, uid) is not None
 
 
-def is_opd_request(message: str) -> bool:
-    q = message.lower()
-    return bool(re.search(r'\b(opd|medical (?:bill|receipt|claim|reimbursement)|doctor (?:bill|receipt)|clinic bill|claim (?:my |the )?(?:medical|consultation)|reimburse(?:ment)? (?:my |the )?(?:medical|doctor|consultation))\b', q))
-
-
 async def stage_attachment(upload: UploadFile) -> dict:
     mime = upload.content_type
     if mime not in ALLOWED:
