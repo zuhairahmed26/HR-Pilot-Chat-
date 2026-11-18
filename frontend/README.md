@@ -1,21 +1,23 @@
 # HR Pilot AI — Frontend MVP
 
-Responsive, standalone React + Vite + TypeScript UI for the existing Cohere-based HR Pilot backend.
+Responsive, standalone React + Vite + TypeScript UI for the HR Pilot backend. The chat can use Cohere or Groq.
 
 ## Run locally (Windows PowerShell)
 
 In backend terminal:
 
 ```powershell
-cd "C:\Users\zuhai\Desktop\HR Pilot\app_v2"
+cd "C:\Users\zuhai\Desktop\HR Pilot\backend"
 .\.venv\Scripts\Activate.ps1
 python -m uvicorn src.main:app --reload --port 8001
 ```
 
-In a **separate** frontend terminal, extract this project next to `app_v2` and run:
+On Windows, `backend\start.bat` can open the backend and frontend in separate windows after both are installed.
+
+In a **separate** frontend terminal, from this frontend directory:
 
 ```powershell
-cd "C:\Users\zuhai\Desktop\HR Pilot\hr-pilot-frontend"
+cd "C:\Users\zuhai\Desktop\HR Pilot\frontend"
 npm install
 npm run dev
 ```
@@ -34,7 +36,9 @@ The login call is `application/x-www-form-urlencoded` to `POST /api/hr/auth/logi
 - Responsive desktop/mobile layout with sidebar and collapsible navigation.
 - New chat, open history, rename, pin, delete, search.
 - Incrementally rendered SSE chat responses, markdown, policy citations.
-- Session-aware multi-turn HR requests (leave/ticket confirmation).
+- Session-aware multi-turn HR requests (leave, ticket, and OPD confirmation).
+- Cohere or Groq selection for a new chat. The choice is kept in the browser for that conversation.
+- OPD slip attachment in chat (PDF, JPG, or PNG), plus a page for locally stored claims.
 - Employee's locally stored leave requests and support tickets.
 - Loading, empty, and network-error states.
 
@@ -42,8 +46,8 @@ The login call is `application/x-www-form-urlencoded` to `POST /api/hr/auth/logi
 
 - The prototype stores the JWT in `sessionStorage` for convenience. For production, use a server-backed or HttpOnly cookie strategy and add comprehensive security hardening.
 - The ticket/leave creation workflows depend on the existing backend; no Odoo actions are performed.
-- Cohere DNS/network failures remain a backend/provider issue and appear in the chat as errors.
-- No file upload feature is implemented in the frontend because employee PDF uploads are not part of the main chat API contract.
+- Provider DNS or network failures remain a backend issue and appear in the chat as errors.
+- Chat attachments are for OPD slips. HR policy PDFs are uploaded through the backend policy API, not this chat composer.
 - This UI uses Google Fonts when available and falls back to local system fonts offline.
 
 ## Build check

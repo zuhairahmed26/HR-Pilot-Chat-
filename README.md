@@ -40,6 +40,7 @@ HR-Pilot-Chat/
 │   │   └── main.py
 │   ├── requirements.txt
 │   ├── .env.example
+│   ├── tests/
 │   └── README.md
 │
 ├── frontend/
@@ -48,6 +49,12 @@ HR-Pilot-Chat/
 │   │   ├── api.ts
 │   │   └── styles.css
 │   └── package.json
+│
+├── Evaluation/
+│   ├── test_cases.json
+│   ├── test_cases.csv
+│   ├── fixtures/
+│   └── README.md
 │
 └── README.md
 ```
@@ -99,9 +106,9 @@ Dedicated Workflow Handler
 Response Streamed to Frontend
 ```
 
-The system uses rule-based routing for certain straightforward requests and ongoing workflows. This reduces unnecessary LLM calls.
+Every employee message is classified by the selected model. There is no local intent shortcut. Active leave, ticket, and OPD drafts are sent to the classifier as context, so a confirmation or a partial detail stays with that workflow, and a clear change of topic can leave it.
 
-For other requests, the selected model assists with intent classification and response generation.
+Leave type, dates, and reason are extracted by Cohere on every turn, including when the chat provider is Groq. A fully written date range does not bypass the model. OPD amount, treatment date, and description are interpreted by the selected model on every turn. A newly attached PNG or JPEG is read with that provider's vision model. PDF text and typed details use text extraction. An explicit employee correction takes precedence over receipt text.
 
 ### LLM Router
 
@@ -199,7 +206,7 @@ This means users can switch between Cohere and Groq without re-embedding policy 
 ### Leave Applications
 
 - Recognize leave application requests.
-- Collect leave information conversationally.
+- Collect leave type, dates, and reason through Cohere, with no local wording patterns.
 - Maintain a draft across messages.
 - Request employee confirmation.
 - Create local pending leave records.
@@ -215,18 +222,19 @@ This means users can switch between Cohere and Groq without re-embedding policy 
 
 ### OPD Claims
 
-- Accept PDF, JPG, and PNG receipts.
-- Extract information from text-based PDFs.
-- Use supported multimodal models to read JPG/PNG receipts.
-- Collect claim amount, treatment date, and description.
-- Ask for missing details.
+- Accept PDF, JPG, and PNG receipts in chat.
+- Read a new JPG or PNG with the selected provider's vision model.
+- Read PDF text and typed claim details with the selected model.
+- Apply employee corrections on later turns, including when a draft is already complete.
+- Ask for missing details instead of inventing an amount, date, or description.
 - Request confirmation before submission.
 - Create local pending OPD claims.
 
 ### Conversation Memory
 
 - Store persistent chat history in PostgreSQL.
-- Use Redis as an optional cache.
+- Keep a Redis cache copy of the active session. Conversation reads use PostgreSQL.
+- Send the model the latest user and assistant turns, bounded to twelve messages, for both completion and streaming.
 - Retrieve previous conversations.
 - Answer questions about the current conversation history.
 
@@ -429,7 +437,7 @@ The original HR Pilot Chat Module and standalone MVP have different internal arc
 | Component | Original HR Pilot | Standalone MVP |
 |---|---|---|
 | LLM | OpenAI GPT models | Cohere / Groq |
-| Intent classification | Structured intent and entity extraction | Intent classification with rule-based shortcuts |
+| Intent classification | Structured intent and entity extraction | Selected-model classification, with no local shortcuts |
 | Policy embeddings | OpenAI embeddings | Cohere Embed 5 Pro |
 | RAG vector store | Qdrant | Qdrant |
 | Session persistence | Redis-first, later PostgreSQL | PostgreSQL-first, Redis cache |
@@ -450,8 +458,9 @@ This is a development MVP, not a production-ready replacement.
 - Local leave and ticket records do not automatically execute original HR approval workflows.
 - OPD claims remain pending until handled outside the prototype.
 - No full scanned-PDF OCR equivalent to the original GPT-4o page-processing workflow.
-- Some supporting code paths still default to Cohere.
-- Backend-side provider locking per conversation is not implemented.
+- Leave-detail extraction always calls Cohere, even when Groq is selected for the chat.
+- Policy embeddings always use Cohere, for both chat providers.
+- The frontend remembers the provider chosen for a conversation. The backend does not yet refuse a different provider on a later request.
 - Production deployment requires additional security, migrations, rate limiting, concurrency safeguards, and operational monitoring.
 
 ## 12. Project Objective
@@ -460,7 +469,9 @@ The primary purpose of this project is to evaluate **multi-model LLM integration
 
 The MVP demonstrates how Cohere and Groq can use a common application backend, RAG architecture, and selected HR workflows while allowing users to choose a generation provider.
 
-Future evaluation can measure:
+`Evaluation/` holds 60 authored scenarios, a scoring guide, and synthetic receipt images. That package is an evaluation design. It is not a record of tests the MVP has already passed.
+
+Future runs of that set can measure:
 
 - LLM API calls per user request.
 - Response quality and policy grounding.

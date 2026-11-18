@@ -1,29 +1,33 @@
-# HR Pilot Cohere — standalone backend (v0.1)
+# HR Pilot — standalone backend
 
-Standalone **backend implementation**, not a finished identical HR Pilot frontend. Original project stays unchanged. New prototype uses its own PostgreSQL/Redis/Qdrant instances.
+Standalone backend for the Cohere and Groq HR Pilot prototype. The original HR Pilot project stays unchanged. This prototype uses its own PostgreSQL, Redis, and Qdrant instances. The React frontend lives in `../frontend`.
 
 ## Implemented
 - Login API `POST /api/hr/auth/login` using form-urlencoded `username` (email) and `password`; 24h JWT, account status checks
 - `GET /api/hr/auth/employees/current_employee`
-- Authenticated chat POST `/api/hr/chat/get_response` with multipart fields `user_query`, optional `session_id`, `chat_history` (accepted for request-shape compatibility but not trusted), `stream_events`
+- Authenticated chat `POST /api/hr/chat/get_response` with multipart fields `user_query`, optional `session_id`, `provider` (`cohere` or `groq`), `chat_history` (accepted for request-shape compatibility but not trusted), `stream_events`, and an optional OPD `attachment`
+- Selected-model intent classification on every message. There is no local intent shortcut. Active drafts are context for the classifier.
+- Policy answers and general chat stream from the selected provider. With `stream_events=true`, SSE emits `status`, `chunk`, `done`, and `error` as content arrives.
+- Cohere and Groq share one bounded history: the latest twelve user and assistant messages.
+- Leave details are extracted by Cohere on every turn. Local date or reason patterns are not used. The employee must confirm before a pending leave row is stored.
+- OPD amount, treatment date, and description are interpreted by the selected model on every turn. A new PNG or JPEG uses that provider's vision model. PDF text and typed details use text extraction.
 - History: `GET /api/hr/chat/all`, `GET/PATCH/DELETE /api/hr/chat/{session_id}`, cache expiration endpoints
 - Admin PDF upload `POST /api/hr/policy_vector_store/upload` and list/delete APIs
-- Private local PDF storage, PyMuPDF extraction, Cohere Embed 5 Pro, Qdrant cosine search, Cohere Command A+ policy answers with source references
-- PostgreSQL is the durable source of truth for messages; Redis is an optional cache
+- Private local PDF storage, PyMuPDF extraction, Cohere Embed 5 Pro, Qdrant cosine search, and source references on policy answers
+- PostgreSQL is the durable source of truth for messages. Redis stores a cache copy of the active session.
 
 ## NOT implemented (do not assume full parity)
-- No Odoo/payroll or live HR transactions; such intents return explicit unsupported messages
-- No Azure blob: private local PDFs instead
-- No independent replica frontend yet
-- Chat is **NOT token-streamed**: raw and SSE responses are supported, but the complete Cohere answer is sent as one chunk
-- No OCR for scanned/image-only PDF; no DOCX; no model-based 11-intent structured classifier; no original HR Pilot subworkflow orchestration
-- PDF upload endpoints are new simplified endpoints; verify frontend adaptation later
+- No Odoo/payroll or live HR transactions; unsupported payroll intents return explicit unsupported messages
+- No Azure blob: private local files instead
+- Leave-detail extraction always calls Cohere, even when `provider=groq`
+- No OCR for scanned or image-only policy PDFs; no DOCX
+- This is not the original HR Pilot intent schema or subworkflow orchestration
 - No production Alembic migrations, robust rate limit, distributed task queue, or concurrency locking: **local prototype only**
 - Original HR Pilot `/download_salary_slip/{token}` is not implemented
 
 ## Windows setup (PowerShell)
-1. Extract project into `C:\Users\zuhai\Desktop\HR Pilot\app_v2` (keep your `.venv`).
-2. Open PowerShell there:
+1. Open PowerShell in this `backend` directory (keep your `.venv`).
+2. Install dependencies and create `.env`:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
@@ -32,7 +36,7 @@ Copy-Item .env.example .env
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-3. Edit `.env`: set the standalone PostgreSQL password, a freshly generated SECRET_KEY, and COHERE_API_KEY. Ports default to PostgreSQL 55432, Redis 56379, Qdrant 16333. Make sure all three containers are running. Do NOT point at your original HR database.
+3. Edit `.env`: set the standalone PostgreSQL password, a freshly generated SECRET_KEY, `COHERE_API_KEY`, and `GROQ_API_KEY`. Ports default to PostgreSQL 55432, Redis 56379, Qdrant 16333. Make sure all three containers are running. Do NOT point at your original HR database. `GROQ_MODEL` is optional; the client default is `qwen/qwen3.8-27b`.
 4. Initialize the isolated schema and seed a synthetic admin:
 
 ```powershell
