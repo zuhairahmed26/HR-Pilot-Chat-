@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from src.database.database_connection import get_db,SessionLocal
 from src.database.models import HRChatHistory
 from src.hr_management_agent.auth.authenticate import get_current_employee
-from src.hr_management_agent.chat.redis_client import get_session,set_session,delete_session
+from src.hr_management_agent.chat.redis_client import set_session,delete_session
 from src.hr_management_agent.policy_vector_store.utils import search_policy
 from src.core.llm_router import complete, stream_complete
 from src.hr_management_agent.chat.intent_classifier import classify_intent, IntentClassificationError
