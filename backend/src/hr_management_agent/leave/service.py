@@ -5,7 +5,6 @@ turns a valid draft into a locally stored pending application.
 """
 import json
 import logging
-import re
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
@@ -78,6 +77,7 @@ def has_active_draft(session_id: str, employee_id: int) -> bool:
 
 
 def _parse_date(value: str | None) -> date | None:
+    """Validate/convert a structured ISO field, never interpret employee wording."""
     if not value:
         return None
     try:
@@ -108,37 +108,8 @@ def _validate(details: dict) -> list[str]:
     return issues
 
 
-def _explicit_leave_fields(message: str) -> dict:
-    """Extract only unambiguous, explicitly written details without an LLM.
-
-    Supports e.g. 'annual leave from 2026-11-02 to 2026-11-04 for a family visit'.
-    Never guesses dates or a reason. Other wordings fall through to Cohere.
-    """
-    lowered = message.casefold()
-    types = [t for t in ('annual', 'casual', 'medical')
-             if re.search(r'\b' + t + r'\s+leave\b', lowered)]
-    if len(types) != 1:
-        return {}
-    match = re.search(
-        r'\bfrom\s+(\d{4}-\d{2}-\d{2})\s+to\s+'
-        r'(\d{4}-\d{2}-\d{2})\s+for\s+(.+?)\s*[.!?]?\s*$',
-        message, re.IGNORECASE | re.DOTALL
-    )
-    if not match:
-        return {}
-    start, end, reason = match.groups()
-    reason = reason.strip().rstrip('.!?').strip()
-    if not (_parse_date(start) and _parse_date(end) and reason):
-        return {}
-    return dict(leave_type=types[0], start_date=start, end_date=end,
-                reason=reason[:500])
-
-
 def _extract(message: str, history: list[dict], existing: dict) -> dict:
-    """Use deterministic extraction for clear dates, otherwise Cohere."""
-    explicit = _explicit_leave_fields(message)
-    if explicit:
-        return explicit
+    """Use Cohere for every leave-detail extraction; no local language patterns."""
     prior = [m for m in history[-8:] if m.get('role') in ('user', 'assistant')]
     prompt = json.dumps({
         'today_utc': now_utc().date().isoformat(),
@@ -207,6 +178,7 @@ def process_leave_message(session_id: str, employee_id: int, message: str,
                 return 'There is no completed leave draft awaiting confirmation. Please provide your leave details first.'
             issues = _validate(draft.details)
             if issues:
+
                 draft.state = 'collecting'
                 return 'Before submitting, please provide: ' + '; '.join(issues) + '.'
             existing = db.scalar(select(LeaveRequest).where(LeaveRequest.draft_id == draft.id))
